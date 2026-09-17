@@ -1,0 +1,51 @@
+name: Import Website Master Template
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-master-template.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out destination
+        uses: actions/checkout@v4
+
+      - name: Check out cleaned template source
+        uses: actions/checkout@v4
+        with:
+          repository: Svviva/Sarh-Al-Elm-Website
+          ref: website-master-template
+          path: source
+
+      - name: Copy reusable website source without school photography or branding
+        run: |
+          rm -rf src public/admin
+          cp -R source/src ./src
+          mkdir -p public/images
+          cp -R source/public/admin ./public/admin
+          cp source/public/favicon.svg ./public/favicon.svg
+          cp source/public/images/placeholder-news-1.svg ./public/images/placeholder-news-1.svg
+          cp source/astro.config.mjs ./astro.config.mjs
+          cp source/netlify.toml ./netlify.toml
+          cp source/package.json ./package.json
+          cp source/package-lock.json ./package-lock.json
+          cp source/tsconfig.json ./tsconfig.json
+          cp source/WEBSITE-MASTER-TEMPLATE.md ./WEBSITE-MASTER-TEMPLATE.md
+          rm -rf source
+
+      - name: Commit imported master template
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Import reusable bilingual school website template'
+            git push
+          fi
